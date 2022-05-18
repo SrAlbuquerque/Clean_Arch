@@ -5,6 +5,7 @@ import 'package:mockito/annotations.dart';
 
 import 'remote_authentication_test.mocks.dart';
 
+import 'package:clean_arch/domain/helpers/helpers.dart';
 import 'package:clean_arch/domain/usecases/usecases.dart';
 
 import 'package:clean_arch/data/usecases/usecases.dart';
@@ -35,6 +36,24 @@ void main() {
           body: {'email': params.email, 'password': params.password},
         ),
       );
+    },
+  );
+  test(
+    'Should throw UnexperctedError if HttpClient returns 400',
+    () async {
+      when(
+        httpClient.request(
+          url: anyNamed('url'),
+          method: anyNamed('method'),
+          body: anyNamed('body'),
+        ),
+      ).thenThrow(HttpError.badRequest);
+
+      final params = AuthenticationParams(
+          email: faker.internet.email(), password: faker.internet.password());
+      final future = sut.auth(params);
+
+      expect(future, throwsA(DomainError.unexpected));
     },
   );
 }
